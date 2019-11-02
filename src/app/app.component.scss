@@ -1,0 +1,14 @@
+.pad{
+    background: null;
+    height: 50px;
+    width: 50px;
+    margin: 5px;
+    border-style: dashed;
+    text-align: center;
+    font-size: 20pt;
+    font-family: monospace;
+    text-decoration-color: white;
+  }
+  .pad:hover{
+    background: blue;
+  }
