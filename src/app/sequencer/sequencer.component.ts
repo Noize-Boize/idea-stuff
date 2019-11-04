@@ -3,27 +3,6 @@ import * as p5 from 'p5';
 import "p5/lib/addons/p5.sound";
 import "p5/lib/addons/p5.dom";
 
-/*
-//hh, clap, bass, audiofiles & loop callbacks
-let hh, clap, bass;
-//PATTERNS. Array of numbers to manipulate when instrument get called
-let hPat, cPat, bPat;
-//PHRASES. Defines how PATTERNS get interpreted
-let hPhrase, cPhrase, bPhrase;
-//DRUMRACK. Attach PHRASES to DRUMRACK's PARTS. Basically sequence transport
-let drums;
-//bpm
-let bpmCTRL;
-//number of beat steps
-let beatLength;
-//variable for canvas
-let cnv;
-//The steps of the sequencer
-let sPat;
-//position of highlighted column when sequencer is playing
-let cursorPos;
-*/
-
 @Component({
   selector: 'app-sequencer',
   templateUrl: './sequencer.component.html',
@@ -47,6 +26,8 @@ export class SequencerComponent implements OnInit {
         let bpmCTRL; //bpm
         let beatLength; //number of beat steps
         let cnv;
+        let sPat; //The series of sequencer steps
+        let cursorPos; 
       }
 
       s.setup = () => {
@@ -56,6 +37,7 @@ export class SequencerComponent implements OnInit {
         //assign instance of # of steps & the visual intervals of the sequencer cells
         s.beatLength = 16;
         s.cellWidth = s.width/s.beatLength;
+        s.cursorPos = 0;
         //loading instruments w/ their respective audio files
         s.hh = s.loadSound('assets/hh_sample.mp3', () => {} );
         s.clap = s.loadSound('assets/clap_sample.mp3', () => {} );
@@ -64,6 +46,8 @@ export class SequencerComponent implements OnInit {
         s.hPat = [0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 1, 0, 1, 1, 0];
         s.cPat = [0, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 0, 0, 1];
         s.bPat = [1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0];
+        //array of the sequencer steps
+        s.sPat = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16];
         //each patterns respective phrase
         s.hPhrase = new p5.Phrase('hh', (time) => {s.hh.play(time); console.log(time); }, s.hPat);
         s.cPhrase = new p5.Phrase('clap', (time) => {s.clap.play(time); console.log(time); }, s.cPat);
@@ -73,7 +57,9 @@ export class SequencerComponent implements OnInit {
         s.drums.addPhrase(s.hPhrase);
         s.drums.addPhrase(s.cPhrase);
         s.drums.addPhrase(s.bPhrase);
-        //hardcode global bpm, create slider to control bpm, position&enlarge it, assign slider value as bpm 
+        //Adding the sequencer steps to DRUMRACK Phrasing, calls on sequence function to draw Playhead in playback
+        s.drums.addPhrase('seq', s.sequence, s.sPat);
+        //hardcode the inital global bpm,create slider for bpm control,position&enlarge slider,assign slider value as bpm 
         s.drums.setBPM(90);
         s.bpmCTRL = s.createSlider(30, 200, 80, .5); //createSlider(min, max, initValue, incrementIntervals)
         s.bpmCTRL.position(10, 175); s.bpmCTRL.style('width', '320px'); //positioning&enlarging slider
@@ -97,7 +83,7 @@ export class SequencerComponent implements OnInit {
         }
       }
 
-      
+      //logic for handling user input on the sequencer 
       s.canvasPressed = () => {
         let rowClicked = s.floor(3*s.mouseY/s.height);
         let indexClicked = s.floor(16*s.mouseX/s.width);
@@ -118,11 +104,10 @@ export class SequencerComponent implements OnInit {
         s.drawMatrix();
       }
 
-      //logic to draw matrix, formerly in setup(), offers potential for variability in sequencer length
+      //logic to draw sequencer matrix, formerly in setup(), offers potential for variability in sequencer length
       s.drawMatrix = () => {
-        //sets canvas background color, sequencer line color&thickness; 
-        s.background(144,0,255); 
-        s.stroke('gray'); s.strokeWeight(2);
+        //sets canvas background color; sequencer line color; line thickness; seq input dots are always white;
+        s.background(144,0,255); s.stroke('gray'); s.strokeWeight(2); s.fill('white');
         //logic for drawing the sequencer grid
         for (let i = 0; i < s.beatLength; i++) { //line(startx,starty,endx,endy)
           s.line(i*s.cellWidth,0,i*s.cellWidth,s.height); //basically just draws the columns
@@ -131,8 +116,8 @@ export class SequencerComponent implements OnInit {
         for (let i = 0; i < 4; i++) {
           s.line(0, i*s.height/3, s.width, i*s.height/3);
         }
-        //s.noStroke(); //disables
-        //assign cells with hardcoded Pat array values
+        s.noStroke();
+        //fill in sequencer with hardcored Pat array values by default
         for (let i=0; i < s.beatLength; i++) {
           if(s.hPat[i] === 1){
             s.ellipse(i*s.cellWidth +0.5*s.cellWidth, s.height/6, 30);
@@ -146,8 +131,20 @@ export class SequencerComponent implements OnInit {
         }
       }
 
-    }
+      //
+      s.sequence = (time, beatIndex) => {
+        s.drawMatrix();
+        s.drawPlayhead(beatIndex);
+      }
 
+      //
+      s.drawPlayhead = (beatIndex) => {
+        s.stroke('red');
+        s.fill(255, 0, 0, 30); //fill(R, G, B, Alphas) <--could also just be # too
+        s.rect((beatIndex-1)*s.cellWidth, 0, s.cellWidth, s.height);
+      }
+
+    }
     let canvas = new p5(sketch);
   }
 
