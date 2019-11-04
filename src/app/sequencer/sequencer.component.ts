@@ -46,10 +46,13 @@ export class SequencerComponent implements OnInit {
         let drums; //Basically the drumrack. attach phrases to drumrack's parts. ~sequencer transport
         let bpmCTRL; //bpm
         let beatLength; //number of beat steps
+        let cnv;
       }
 
       s.setup = () => {
-        s.createCanvas(800, 150);
+        s.cnv = s.createCanvas(800, 150);
+        //canvasPressed is a user defined function
+        s.cnv.mousePressed(s.canvasPressed);
         //assign instance of # of steps & the visual intervals of the sequencer cells
         s.beatLength = 16;
         s.cellWidth = s.width/s.beatLength;
@@ -74,7 +77,49 @@ export class SequencerComponent implements OnInit {
         s.drums.setBPM(90);
         s.bpmCTRL = s.createSlider(30, 200, 80, .5); //createSlider(min, max, initValue, incrementIntervals)
         s.bpmCTRL.position(10, 175); s.bpmCTRL.style('width', '320px'); //positioning&enlarging slider
-        s.bpmCTRL.input( () => {s.drums.setBPM(s.bpmCTRL.value())} ); 
+        s.bpmCTRL.input( () => {s.drums.setBPM(s.bpmCTRL.value())} );  
+        //initialize the drawing of the sequencer matrix w/ drawMatrix()
+        s.drawMatrix();
+      }
+
+      //logic for handling sequence playing
+      s.keyPressed = () => {
+        if (s.key === "p") {
+          if (s.hh.isLoaded() && s.clap.isLoaded() && s.bass.isLoaded()) {
+            if (!s.drums.isPlaying) {
+              s.drums.loop();
+            } else {
+              s.drums.stop();
+            }            
+          } else {
+            console.log('slowdown boi, audiofiles gotta load...');
+          }
+        }
+      }
+
+      
+      s.canvasPressed = () => {
+        let rowClicked = s.floor(3*s.mouseY/s.height);
+        let indexClicked = s.floor(16*s.mouseX/s.width);
+        //logic for updating sequence arrays upon user input  
+        if (rowClicked === 0) {
+          console.log('first row ' + indexClicked);
+          s.hPat[indexClicked] = +!s.hPat[indexClicked];
+        }
+        else if (rowClicked === 1) {
+          console.log('second row ' + indexClicked);
+          s.cPat[indexClicked] = +!s.cPat[indexClicked];
+        }
+        else if (rowClicked === 2) {
+          console.log('third row ' + indexClicked);
+          s.bPat[indexClicked] = +!s.bPat[indexClicked];
+        }
+        //call on the matrix to be drawn up use updated input using the above logic structure
+        s.drawMatrix();
+      }
+
+      //logic to draw matrix, formerly in setup(), offers potential for variability in sequencer length
+      s.drawMatrix = () => {
         //sets canvas background color, sequencer line color&thickness; 
         s.background(144,0,255); 
         s.stroke('gray'); s.strokeWeight(2);
@@ -97,22 +142,6 @@ export class SequencerComponent implements OnInit {
           }
           if (s.bPat[i] === 1) {
             s.ellipse(i*s.cellWidth +0.5*s.cellWidth, s.height*5/6, 30);
-          }
-        }
-
-
-      }
-
-      s.keyPressed = () => {
-        if (s.key === " ") {
-          if (s.hh.isLoaded() && s.clap.isLoaded() && s.bass.isLoaded()) {
-            if (!s.drums.isPlaying) {
-              s.drums.loop();
-            } else {
-              s.drums.stop();
-            }            
-          } else {
-            console.log('slowdown boi, audiofiles gotta load...');
           }
         }
       }
