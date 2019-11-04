@@ -61,8 +61,8 @@ export class SequencerComponent implements OnInit {
         s.clap = s.loadSound('assets/clap_sample.mp3', () => {} );
         s.bass = s.loadSound('assets/bass_sample.mp3', () => {} );
         //hardcoding each instruments default patterns
-        s.hPat = [0, 1, 0, 1, 1, 0, 1, 0, 0, 1, 0, 1, 1, 0, 1, 0];
-        s.cPat = [1, 0, 1, 0, 0, 1, 0, 1, 1, 0, 1, 0, 0, 1, 0, 1];
+        s.hPat = [0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 1, 0, 1, 1, 0];
+        s.cPat = [0, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 0, 0, 1];
         s.bPat = [1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0];
         //each patterns respective phrase
         s.hPhrase = new p5.Phrase('hh', (time) => {s.hh.play(time); console.log(time); }, s.hPat);
@@ -84,7 +84,7 @@ export class SequencerComponent implements OnInit {
 
       //logic for handling sequence playing
       s.keyPressed = () => {
-        if (s.key === "p") {
+        if (s.key === " ") {
           if (s.hh.isLoaded() && s.clap.isLoaded() && s.bass.isLoaded()) {
             if (!s.drums.isPlaying) {
               s.drums.loop();
